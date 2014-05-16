@@ -5,9 +5,18 @@ import java.io.UnsupportedEncodingException;
 import java.math.*;
 import java.security.*;
 import java.util.Formatter;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import static javax.management.Query.lt;
 import javax.swing.JOptionPane;
+import org.apache.commons.codec.binary.Base64;
 import org.jasypt.util.password.*;
 import org.jasypt.util.text.*;
+
 
 public class Crypyo {
     //jasypt
@@ -69,7 +78,7 @@ public class Crypyo {
           JOptionPane.showInputDialog(null, "MD5", new BigInteger(1,m.digest()).toString(16));
                   }
     
-    //SHA - SHA - 256
+    //SHA
         
            
         public String sha256(String base) {
@@ -119,4 +128,51 @@ public String byteToHex(final byte[] hash)
     formatter.close();
     return result;
 }  
+public static String encrypt(String key1, String key2, String value) {
+        try {
+            IvParameterSpec iv = new IvParameterSpec(key2.getBytes("UTF-8"));
+
+            SecretKeySpec skeySpec = new SecretKeySpec(key1.getBytes("UTF-8"),
+                    "AES");
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+            cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
+            byte[] encrypted = cipher.doFinal(value.getBytes());
+            System.out.println("encrypted string:"
+                    + Base64.encodeBase64String(encrypted));
+            return Base64.encodeBase64String(encrypted);
+        } catch (UnsupportedEncodingException ex) {
+            ex.printStackTrace();
+        } catch (InvalidAlgorithmParameterException ex) {
+            ex.printStackTrace();
+        } catch (InvalidKeyException ex) {
+            ex.printStackTrace();
+        } catch (NoSuchAlgorithmException ex) {
+            ex.printStackTrace();
+        } catch (BadPaddingException ex) {
+            ex.printStackTrace();
+        } catch (IllegalBlockSizeException ex) {
+            ex.printStackTrace();
+        } catch (NoSuchPaddingException ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
+
+    public static String decrypt(String key1, String key2, String encrypted) {
+        try {
+            IvParameterSpec iv = new IvParameterSpec(key2.getBytes("UTF-8"));
+
+            SecretKeySpec skeySpec = new SecretKeySpec(key1.getBytes("UTF-8"),
+                    "AES");
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+            cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
+            byte[] original = cipher.doFinal(Base64.decodeBase64(encrypted));
+
+            return new String(original);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
+
 }
